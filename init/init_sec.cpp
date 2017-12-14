@@ -12,7 +12,6 @@
 #include "util.h"
 #include "vendor_init.h"
 
-#include "init_sec.h"
 
 #ifndef BACKLIGHT_PATH
 #define BACKLIGHT_PATH          "/sys/class/leds/lcd-backlight/brightness"
@@ -27,53 +26,17 @@ std::string bootloader;
 std::string device;
 char* devicename;
 
-device_variant check_device_and_get_variant()
-{
-    bootloader = property_get("ro.bootloader");
-    return match(bootloader);
-}
+
 
 void vendor_load_properties()
 {
-    device_variant variant = check_device_and_get_variant();
+ 	bootloader = property_get("ro.bootloader");
+            property_set("ro.build.fingerprint", "samsung/millet3gxx/millet3g:5.1.1/LMY47X/T331XXS1BQD1:user/release-keys");
+            property_set("ro.build.description", "millet3gxx-user 5.0.2 LRX22G T531XXU1BOE6 release-keys");
+            property_set("ro.product.model", "SM-T331");
+            property_set("ro.product.device", "millet3g");
+     
 
-    switch (variant) {
-        case T530NU:
-            /* matissewifiue */
-            property_set("ro.build.fingerprint", "samsung/matissewifiue/matissewifi:5.0.2/LRX22G/T530NUU1BOJ4:user/release-keys");
-            property_set("ro.build.description", "matissewifiue-user 5.0.2 LRX22G T530NUU1BOJ4 release-keys");
-            property_set("ro.product.model", "SM-T530NU");
-            property_set("ro.product.device", "matissewifi");
-            break;
-        case T530XX:
-            /* matissewifixx */
-            property_set("ro.build.fingerprint", "samsung/matissewifixx/matissewifi:5.0.2/LRX22G/T530XXU1BOJ4:user/release-keys");
-            property_set("ro.build.description", "matissewifixx-user 5.0.2 LRX22G T530XXU1BOJ4 release-keys");
-            property_set("ro.product.model", "SM-T530");
-            property_set("ro.product.device", "matissewifi");
-            break;
-        case T531XX:
-            /* matisse3gxx */
-            property_set("ro.build.fingerprint", "samsung/matisse3gxx/matisse3g:5.0.2/LRX22G/T531XXU1BOE6:user/release-keys");
-            property_set("ro.build.description", "matisse3gxx-user 5.0.2 LRX22G T531XXU1BOE6 release-keys");
-            property_set("ro.product.model", "SM-T531");
-            property_set("ro.product.device", "matisse3g");
-            break;
-        case T535XX:
-            /* matisseltexx */
-            property_set("ro.build.fingerprint", "samsung/matisseltexx/matisselte:5.0.2/LRX22G/T535XXU1BOL1:user/release-keys");
-            property_set("ro.build.description", "matisseltexx-user 5.0.2 LRX22G T535XXU1BOL1 release-keys");
-            property_set("ro.product.model", "SM-T535");
-            property_set("ro.product.device", "matisselte");
-            break;
-        default: /* T530 */
-            /* matissewifi */
-            property_set("ro.build.fingerprint", "samsung/matissewifixx/matissewifi:5.0.2/LRX22G/T530XXU1ANAI:user/release-keys");
-            property_set("ro.build.description", "matissewifixx-user 5.0.2 LRX22G T530XXU1ANAI release-keys");
-            property_set("ro.product.model", "SM-T530");
-            property_set("ro.product.device", "matissewifi");
-            break;
-    }
 
     device = property_get("ro.product.device");
     INFO("Found bootloader id %s setting build properties for %s device\n", bootloader.c_str(), device.c_str());
@@ -97,16 +60,17 @@ void healthd_board_mode_charger_draw_battery(
     char cap_str[STR_LEN];
     int x, y;
     int str_len_px;
+    GRFont* gr_font= NULL;
     static int char_height = -1, char_width = -1;
 
     if (char_height == -1 && char_width == -1)
-        gr_font_size(&char_width, &char_height);
+        gr_font_size(gr_font, &char_width, &char_height);
     snprintf(cap_str, (STR_LEN - 1), "%d%%", batt_prop->batteryLevel);
-    str_len_px = gr_measure(cap_str);
+    str_len_px = gr_measure(gr_font, cap_str);
     x = (gr_fb_width() - str_len_px) / 2;
     y = (gr_fb_height() + char_height) / 2;
     gr_color(0xa4, 0xc6, 0x39, 255);
-    gr_text(x, y, cap_str, 0);
+    gr_text(gr_font, x, y, cap_str, 0);
 }
 
 int healthd_board_battery_update(__attribute__((unused)) struct android::BatteryProperties *props)
